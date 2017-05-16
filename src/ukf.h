@@ -33,7 +33,8 @@ public:
   MatrixXd Xsig_pred_;
 
   ///* time when the state is true, in us
-  long long time_us_;
+  //long long time_us_;
+  long long previous_timestamp_;
 
   ///* Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
@@ -65,6 +66,9 @@ public:
   ///* Augmented state dimension
   int n_aug_;
 
+  ///* radar measurement dimension
+  int n_z_;
+
   ///* Sigma point spreading parameter
   double lambda_;
 
@@ -73,6 +77,16 @@ public:
 
   ///* the current NIS for laser
   double NIS_laser_;
+
+
+
+  // laser
+
+  // measurement matrix
+  Eigen::MatrixXd H_laser_;
+
+  // measurement covariance matrix
+  Eigen::MatrixXd R_laser_;
 
   /**
    * Constructor
@@ -105,9 +119,22 @@ public:
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
+   *
    */
-  void UpdateRadar(MeasurementPackage meas_package);
+  //void UpdateRadar(MeasurementPackage meas_package);
+  //void UpdateRadar(MeasurementPackage meas_package, VectorXd &z_pred, MatrixXd &S);
+  void UpdateRadar(const MeasurementPackage meas_package, const VectorXd &z_pred, const MatrixXd &S, const MatrixXd &Zsig);
+  //void GenerateSigmaPoints(MatrixXd* Xsig_out);
+  void AugmentedSigmaPoints(MatrixXd &Xsig_out);
+  //void SigmaPointPrediction(MatrixXd* Xsig_out);
+  void SigmaPointPrediction(const MatrixXd &Xsig_aug, const double delta_t, MatrixXd &Xsig_out) ;
+  //void PredictMeanAndCovariance(VectorXd &x_pred, MatrixXd &P_pred);
+
+  void PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, MatrixXd &P_out);
+
+  void PredictRadarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Zsig_out);
+
+
 };
 
 #endif /* UKF_H */

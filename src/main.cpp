@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
 
   check_arguments(argc, argv);
 
+
   string in_file_name_ = argv[1];
   ifstream in_file_(in_file_name_.c_str(), ifstream::in);
 
@@ -61,6 +62,8 @@ int main(int argc, char* argv[]) {
   ofstream out_file_(out_file_name_.c_str(), ofstream::out);
 
   check_files(in_file_, in_file_name_, out_file_, out_file_name_);
+
+
 
   /**********************************************
    *  Set Measurements                          *
@@ -129,6 +132,7 @@ int main(int argc, char* argv[]) {
       gt_pack_list.push_back(gt_package);
   }
 
+
   // Create a UKF instance
   UKF ukf;
 
@@ -142,14 +146,14 @@ int main(int argc, char* argv[]) {
   size_t number_of_measurements = measurement_pack_list.size();
 
   // column names for output file
-  out_file_ << "time_stamp" << "\t";  
+  out_file_ << "time_stamp" << "\t";
   out_file_ << "px_state" << "\t";
   out_file_ << "py_state" << "\t";
   out_file_ << "v_state" << "\t";
   out_file_ << "yaw_angle_state" << "\t";
   out_file_ << "yaw_rate_state" << "\t";
   out_file_ << "sensor_type" << "\t";
-  out_file_ << "NIS" << "\t";  
+  out_file_ << "NIS" << "\t";
   out_file_ << "px_measured" << "\t";
   out_file_ << "py_measured" << "\t";
   out_file_ << "px_ground_truth" << "\t";
@@ -159,6 +163,17 @@ int main(int argc, char* argv[]) {
 
 
   for (size_t k = 0; k < number_of_measurements; ++k) {
+    // hangulo
+
+    // check flag
+    if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR && ! ukf.use_radar_ )
+      continue;
+
+    if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER && !ukf.use_laser_)
+       continue;
+    // -- hangulo
+
+
     // Call the UKF-based fusion
     ukf.ProcessMeasurement(measurement_pack_list[k]);
 
@@ -198,6 +213,7 @@ int main(int argc, char* argv[]) {
       out_file_ << ro * sin(phi) << "\t"; // py measurement
     }
 
+
     // output the ground truth
     out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
     out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
@@ -211,9 +227,9 @@ int main(int argc, char* argv[]) {
     float y_estimate_ = ukf.x_(1);
     float vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
     float vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
-    
+
     ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
-    
+
     estimations.push_back(ukf_x_cartesian_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
 
